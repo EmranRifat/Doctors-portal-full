@@ -45,11 +45,12 @@ async function run() {
         const serviceCollection = client.db("doctors_portal").collection("services");
         const bookingCollection = client.db("doctors_portal").collection("booking");
         const userCollection = client.db("doctors_portal").collection("users");
+        const doctorCollection = client.db("doctors_portal").collection("doctors");
 
         app.get('/service', async (req, res) => {
 
             const query = {};
-            const cursor = serviceCollection.find(query);
+            const cursor = serviceCollection.find(query).project({ name: 1 });
             const services = await cursor.toArray();
             res.send(services);
 
@@ -97,8 +98,9 @@ async function run() {
             res.send(services);
         })
 
-        app.get('/booking', verifyJWT, async (req, res) => {
+        app.get('/booking', async (req, res) => {
 
+            // verifyJWT
             const patient = req.query.patient;
             const authorization = req.headers.authorization;
             // console.log('auth header', authorization);
@@ -113,14 +115,6 @@ async function run() {
             }
 
 
-            // console.log(patient);
-            // if (patient) {
-
-            // }
-            // else {
-            //     const bookings = await bookingCollection.find({}).toArray();
-            //     res.send(bookings);
-            // }
 
         })
 
@@ -138,11 +132,19 @@ async function run() {
             const result = await bookingCollection.insertOne(booking);
             return res.send({ success: true, result });
 
-
-
-
         })
 
+
+        app.get('/doctor', async (req, res) => {
+            const doctors = await doctorCollection.find().toArray();
+            res.send(doctors);
+        })
+
+        app.post('/doctor', async (req, res) => {
+            const doctor = req.body;
+            const result = await doctorCollection.insertOne(doctor);
+            res.send(result);
+        });
 
 
     }
